@@ -22,11 +22,12 @@ test("renders the Folio Markdown converter", async () => {
   assert.match(html, /DOCUMENT PREVIEW/);
   assert.match(html, /SRS Standard/);
   assert.match(html, /Architecture/);
+  assert.match(html, /Legal &amp; Policy/);
   assert.match(html, /Document setup/);
+  assert.match(html, /Style Lab/);
   assert.match(html, /Scrollable document preview/);
   assert.match(html, /Zoom out/);
   assert.match(html, /Zoom in/);
-  assert.match(html, /Custom CSS/);
   assert.match(html, /↓ PDF/);
   assert.match(html, /Professional DOCX/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
@@ -37,4 +38,12 @@ test("keeps long previews on a readable paper canvas", async () => {
   assert.match(css, /\.page-a4, \.page-letter \{ aspect-ratio: auto; \}/);
   assert.match(css, /\.document-preview \{[^}]*background: var\(--paper\)/);
   assert.match(css, /\.preview-scroll \{[^}]*overflow: auto/);
+});
+
+test("detects legal Markdown and exposes unrestricted styling", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /privacy policy\|terms/);
+  assert.match(page, /setThemeKey\("legal"\)/);
+  assert.match(page, /Always enabled/);
+  assert.match(page, /Object\.keys\(cssPresets\)/);
 });

@@ -45,6 +45,7 @@ The system allows users to upload Markdown, edit it live, apply a document stand
 3. The exported document preserves the selected professional style.`;
 
 const themes = {
+  legal: { label: "Legal & Policy", category: "Policies, terms & agreements", accent: "#24466f", ink: "#202733", paper: "#fffefa", font: "Georgia, 'Times New Roman', serif", wordFont: "Cambria", sample: "PRIVACY\nPOLICY", description: "Formal, trustworthy and clause-ready" },
   srs: { label: "SRS Standard", category: "Requirements & specifications", accent: "#145a7a", ink: "#17252d", paper: "#ffffff", font: "Arial, Helvetica, sans-serif", wordFont: "Aptos", sample: "SOFTWARE\nREQUIREMENTS", description: "Structured, numbered and audit-ready" },
   architecture: { label: "Architecture", category: "System design documents", accent: "#5b4b9a", ink: "#222236", paper: "#fcfcff", font: "Arial, Helvetica, sans-serif", wordFont: "Aptos", sample: "SYSTEM\nARCHITECTURE", description: "Technical, precise and diagram-friendly" },
   executive: { label: "Executive", category: "Reports & proposals", accent: "#1e5f54", ink: "#17211f", paper: "#ffffff", font: "Arial, Helvetica, sans-serif", wordFont: "Aptos", sample: "QUARTERLY\nPERSPECTIVE", description: "Clear, authoritative and board-ready" },
@@ -53,7 +54,19 @@ const themes = {
   minimal: { label: "Technical Minimal", category: "Developer documentation", accent: "#3d4d76", ink: "#1f2430", paper: "#fbfcff", font: "ui-monospace, SFMono-Regular, Menlo, monospace", wordFont: "Aptos Mono", sample: "LESS,\nBUT BETTER.", description: "Crisp, modern and code-focused" },
 } as const;
 
+const cssPresets = {
+  policy: { label: "Policy", description: "Legal clauses & definitions", css: `.document-preview { font-family: Georgia, serif; color: #202733; }\n.document-preview h1 { text-align: center; border: 0; font-size: 38px; }\n.document-preview h2 { color: #24466f; border-bottom: 1px solid #b9c5d3; }\n.document-preview p { text-align: justify; hyphens: auto; }\n.document-preview strong { color: #172f4d; }` },
+  corporate: { label: "Corporate", description: "Clean business reporting", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h1 { color: #16324f; border-bottom: 4px solid #2d6a8e; padding-bottom: 16px; }\n.document-preview h2 { color: #2d6a8e; }\n.document-preview table { box-shadow: 0 0 0 1px #d5dce3; }` },
+  modern: { label: "Modern", description: "Bold contemporary hierarchy", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h1 { font-size: 44px; letter-spacing: -0.05em; }\n.document-preview h2 { border-left: 5px solid var(--accent); padding-left: 14px; }\n.document-preview blockquote { border-radius: 4px; background: #f3f5f7; }` },
+  classic: { label: "Classic", description: "Traditional book typography", css: `.document-preview { font-family: Georgia, serif; }\n.document-preview h1 { text-align: center; font-weight: 400; }\n.document-preview h2 { color: #292421; font-variant: small-caps; letter-spacing: .04em; }\n.document-preview p { text-align: justify; text-indent: 1.4em; }` },
+  compact: { label: "Compact", description: "Dense policy or handbook", css: `.document-preview p, .document-preview li { font-size: 10.5px; line-height: 1.45; }\n.document-preview h2 { margin-top: 22px; margin-bottom: 7px; }\n.document-preview h3 { margin-top: 16px; margin-bottom: 5px; }\n.document-preview table { margin: 12px 0; }` },
+  spacious: { label: "Spacious", description: "Premium generous layout", css: `.document-preview p, .document-preview li { line-height: 1.95; }\n.document-preview h2 { margin-top: 52px; margin-bottom: 18px; }\n.document-preview h3 { margin-top: 34px; }\n.document-preview table { margin: 34px 0; }` },
+  technical: { label: "Technical", description: "Code & architecture docs", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h2 { color: #4d3d8f; border-left: 4px solid #6b5bb0; padding-left: 12px; }\n.document-preview code { color: #8b2f57; }\n.document-preview pre { border: 1px solid #d8d7df; border-radius: 5px; }` },
+  accessible: { label: "Accessible", description: "High contrast & readable", css: `.document-preview { font-family: Arial, sans-serif; color: #111; }\n.document-preview p, .document-preview li { font-size: 14px; line-height: 1.8; }\n.document-preview h1, .document-preview h2, .document-preview h3 { color: #111; }\n.document-preview a { color: #0047ab; text-decoration: underline; }` },
+} as const;
+
 type ThemeKey = keyof typeof themes;
+type CssPresetKey = keyof typeof cssPresets;
 type PageSize = "a4" | "letter";
 type MarginSize = "narrow" | "normal" | "wide";
 
@@ -69,6 +82,10 @@ export default function Home() {
   const [filename, setFilename] = useState("software-requirements.md");
   const [themeKey, setThemeKey] = useState<ThemeKey>("srs");
   const [customCss, setCustomCss] = useState(".document-preview h1 { letter-spacing: -0.035em; }\n.document-preview table { break-inside: avoid; }");
+  const [activePreset, setActivePreset] = useState<CssPresetKey | "custom">("custom");
+  const [accentOverride, setAccentOverride] = useState("");
+  const [bodySize, setBodySize] = useState(12.5);
+  const [lineHeight, setLineHeight] = useState(1.72);
   const [panel, setPanel] = useState<"settings" | "css" | null>(null);
   const [notice, setNotice] = useState("");
   const [title, setTitle] = useState("Software Requirements Specification");
@@ -86,6 +103,7 @@ export default function Home() {
   const [zoom, setZoom] = useState(95);
   const fileRef = useRef<HTMLInputElement>(null);
   const theme = themes[themeKey];
+  const activeAccent = accentOverride || theme.accent;
 
   const html = useMemo(() => {
     const previewMarkdown = numberedHeadings ? markdown.replace(/^(#{2,3})\s+\d+(?:\.\d+)*\.?\s+/gm, "$1 ") : markdown;
@@ -112,8 +130,22 @@ export default function Home() {
       const value = String(reader.result ?? "");
       setMarkdown(value);
       setFilename(file.name);
-      const firstHeading = value.match(/^#\s+(.+)$/m)?.[1];
-      if (firstHeading) setTitle(firstHeading.trim());
+      const firstHeading = value.match(/^#\s+(.+)$/m)?.[1]?.trim();
+      const lines = value.split(/\r?\n/).map((line) => line.replace(/^#+\s*|[*_`>]/g, "").trim()).filter(Boolean);
+      const namedLine = lines.slice(0, 60).filter((line) => line.length <= 100 && /privacy policy|terms(?: of (?:use|service))?|user agreement|cookie policy|refund policy|acceptable use|service agreement/i.test(line)).sort((a, b) => a.length - b.length)[0];
+      const filenameTitle = file.name.replace(/\.md$/i, "").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+      const detectedTitle = firstHeading || namedLine || filenameTitle || "Untitled Document";
+      const fingerprint = `${file.name}\n${value.slice(0, 8000)}`.toLowerCase();
+      setTitle(detectedTitle);
+      if (/privacy|terms|policy|agreement|legal|cookie/.test(fingerprint)) {
+        setThemeKey("legal");
+        setCustomCss(cssPresets.policy.css);
+        setActivePreset("policy");
+        const owner = detectedTitle.match(/^(.+?)\s+(?:privacy policy|terms|policy|agreement)/i)?.[1];
+        if (owner && owner.length <= 40) setOrganization(owner);
+      } else if (/architecture|system design|technical design/.test(fingerprint)) setThemeKey("architecture");
+      else if (/requirement|\bsrs\b/.test(fingerprint)) setThemeKey("srs");
+      else if (/research|abstract|methodology|bibliography/.test(fingerprint)) setThemeKey("academic");
       document.querySelector("#studio")?.scrollIntoView({ behavior: "smooth" });
       flash("Markdown loaded privately in your browser.");
     };
@@ -133,7 +165,7 @@ export default function Home() {
       VerticalAlign, WidthType,
     } = await import("docx");
     const tokens = marked.lexer(markdown);
-    const accent = theme.accent.slice(1);
+    const accent = activeAccent.slice(1);
     const ink = theme.ink.slice(1);
     const children: Array<InstanceType<typeof Paragraph> | InstanceType<typeof Table> | InstanceType<typeof TableOfContents>> = [];
     const margins = marginSize === "narrow" ? 720 : marginSize === "wide" ? 1440 : 1080;
@@ -259,6 +291,22 @@ export default function Home() {
     </div>
   </aside>;
 
+  const styleLabPanel = <aside className="inspector-pane css-pane">
+    <div className="pane-label"><span>STYLE LAB</span><button onClick={() => setPanel(null)}>×</button></div>
+    <div className="style-lab-scroll">
+      <div className="style-intro"><b>Design without limits</b><p>Start with a professional recipe, adjust the controls, then edit every CSS detail.</p></div>
+      <div className="style-section"><div className="style-section-title"><span>CSS recipes</span><small>{Object.keys(cssPresets).length} presets</small></div>
+        <div className="css-preset-grid">{(Object.keys(cssPresets) as CssPresetKey[]).map((key) => <button key={key} className={activePreset === key ? "selected" : ""} onClick={() => { setCustomCss(cssPresets[key].css); setActivePreset(key); }}><b>{cssPresets[key].label}</b><small>{cssPresets[key].description}</small></button>)}</div>
+      </div>
+      <div className="style-section"><div className="style-section-title"><span>Quick controls</span><button className="reset-style" onClick={() => { setAccentOverride(""); setBodySize(12.5); setLineHeight(1.72); setCustomCss(""); setActivePreset("custom"); }}>Reset</button></div>
+        <label className="color-control"><span>Accent colour</span><input type="color" value={activeAccent} onChange={(e) => setAccentOverride(e.target.value)} /></label>
+        <label className="range-control"><span>Body size <b>{bodySize}px</b></span><input type="range" min="10" max="16" step="0.5" value={bodySize} onChange={(e) => setBodySize(Number(e.target.value))} /></label>
+        <label className="range-control"><span>Line height <b>{lineHeight.toFixed(2)}</b></span><input type="range" min="1.3" max="2.1" step="0.05" value={lineHeight} onChange={(e) => setLineHeight(Number(e.target.value))} /></label>
+      </div>
+      <div className="style-section css-editor-section"><div className="style-section-title"><span>Custom CSS</span><small>Always enabled</small></div><textarea aria-label="Custom CSS editor" value={customCss} onChange={(e) => { setCustomCss(e.target.value); setActivePreset("custom"); }} spellCheck="false"/><small>Target the page with <code>.document-preview</code>. Changes appear instantly and are included in PDF.</small></div>
+    </div>
+  </aside>;
+
   return (
     <main>
       <nav className="nav shell">
@@ -270,10 +318,10 @@ export default function Home() {
       <section className="hero shell" id="top">
         <div className="eyebrow"><span /> Professional document studio</div>
         <h1>Your Markdown,<br/><em>document ready.</em></h1>
-        <p className="hero-copy">Upload one Markdown file. Turn it into an SRS, architecture document, executive report, research paper, or beautifully typeset publication.</p>
+        <p className="hero-copy">Upload one Markdown file. Turn it into a policy, terms document, SRS, architecture document, executive report, research paper, or beautifully typeset publication.</p>
         <div className="hero-actions"><button className="primary" onClick={() => fileRef.current?.click()}>Upload a .md file <span>→</span></button><a className="secondary" href="#studio">Explore the studio</a></div>
         <p className="privacy"><span>✓</span> Private by design — your Markdown never leaves your browser</p>
-        <div className="hero-rule"><span>01</span><i /><span>6 PROFESSIONAL STANDARDS</span></div>
+        <div className="hero-rule"><span>01</span><i /><span>7 PROFESSIONAL STANDARDS</span></div>
       </section>
 
       <section className="studio-wrap" id="studio">
@@ -284,7 +332,7 @@ export default function Home() {
             <div className="bar-tools">
               <button onClick={() => fileRef.current?.click()}>＋ Upload .md</button>
               <button className={panel === "settings" ? "active" : ""} onClick={() => setPanel(panel === "settings" ? null : "settings")}>⚙ Document setup</button>
-              <button className={panel === "css" ? "active" : ""} onClick={() => setPanel(panel === "css" ? null : "css")}>⌘ Custom CSS</button>
+              <button className={panel === "css" ? "active" : ""} onClick={() => setPanel(panel === "css" ? null : "css")}>✦ Style Lab</button>
               <span className="divider"/><button onClick={exportPdf}>↓ PDF</button><button className="export" onClick={exportDocx}>↓ Professional DOCX</button>
             </div>
           </div>
@@ -294,7 +342,7 @@ export default function Home() {
               <div className="pane-label preview-toolbar"><span>DOCUMENT PREVIEW · {pageSize.toUpperCase()}</span><div className="preview-actions"><button aria-label="Zoom out" onClick={() => setZoom(Math.max(55, zoom - 10))}>−</button><span>{zoom}%</span><button aria-label="Zoom in" onClick={() => setZoom(Math.min(125, zoom + 10))}>＋</button><button className="fit-button" onClick={() => setZoom(95)}>Fit</button><span className="live"><i/> Live</span></div></div>
               <div className="preview-scroll" tabIndex={0} aria-label="Scrollable document preview">
                 <div className="page-stage">
-                  <div className={`paper document-shell page-${pageSize} margin-${marginSize}`} style={{ "--accent": theme.accent, "--ink": theme.ink, "--paper": theme.paper, "--doc-font": theme.font, "--page-padding": padding, zoom: zoom / 100 } as React.CSSProperties}>
+                  <div className={`paper document-shell page-${pageSize} margin-${marginSize}`} style={{ "--accent": activeAccent, "--ink": theme.ink, "--paper": theme.paper, "--doc-font": theme.font, "--page-padding": padding, "--body-size": `${bodySize}px`, "--line-height": lineHeight, zoom: zoom / 100 } as React.CSSProperties}>
                     {showHeader && <div className="paper-header"><span>{organization}</span><span>{classification} · V{version}</span></div>}
                     {coverPage && <section className="cover-preview"><small>{organization}</small><h1>{title}</h1><p>{themes[themeKey].category}</p><div><span>{author}</span><span>Version {version}</span></div></section>}
                     <article className={`document-preview theme-${themeKey} ${numberedHeadings ? "numbered-headings" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
@@ -304,7 +352,7 @@ export default function Home() {
               </div>
             </section>
             {panel === "settings" && settingsPanel}
-            {panel === "css" && <aside className="inspector-pane css-pane"><div className="pane-label"><span>CUSTOM CSS</span><button onClick={() => setPanel(null)}>×</button></div><p>Fine-tune the PDF preview with your own styles.</p><textarea aria-label="Custom CSS editor" value={customCss} onChange={(e) => setCustomCss(e.target.value)} spellCheck="false"/><small>Use <code>.document-preview</code> to target your document.</small></aside>}
+            {panel === "css" && styleLabPanel}
           </div>
         </div>
       </section>
@@ -312,14 +360,14 @@ export default function Home() {
       <section className="templates shell" id="templates">
         <div className="section-title"><span className="section-kicker">PROFESSIONAL STANDARDS</span><h2>Built for real documents.</h2><p>Choose a standard and Folio applies its typography, hierarchy, spacing, tables and Word styles to your Markdown.</p></div>
         <div className="template-grid">
-          {(Object.keys(themes) as ThemeKey[]).map((key, index) => <button key={key} className={`template-card ${themeKey === key ? "selected" : ""}`} onClick={() => setThemeKey(key)}>
+          {(Object.keys(themes) as ThemeKey[]).map((key, index) => <button key={key} className={`template-card ${themeKey === key ? "selected" : ""}`} onClick={() => { setThemeKey(key); setAccentOverride(""); }}>
             <div className={`mini-page mini-${key}`}><small>FOLIO / 0{index + 1}</small><h3>{themes[key].sample}</h3><i/><p>{themes[key].category}</p></div>
             <div className="template-meta"><div><b>{themes[key].label}</b><small>{themes[key].description}</small></div><span>{themeKey === key ? "✓" : "→"}</span></div>
           </button>)}
         </div>
       </section>
 
-      <section className="features" id="features"><div className="shell feature-grid"><div><span className="feature-no">01</span><h3>Standards, not skins</h3><p>SRS, architecture, executive, editorial, academic and technical standards shape both preview and export.</p></div><div><span className="feature-no">02</span><h3>Professional control</h3><p>Cover pages, metadata, margins, headers, classifications, page numbers, TOC and custom CSS.</p></div><div><span className="feature-no">03</span><h3>Word-native output</h3><p>Real headings, styled requirement tables, numbered lists, code blocks and editable document structure.</p></div></div></section>
+      <section className="features" id="features"><div className="shell feature-grid"><div><span className="feature-no">01</span><h3>Standards, not skins</h3><p>Legal, SRS, architecture, executive, editorial, academic and technical standards shape preview and export.</p></div><div><span className="feature-no">02</span><h3>Style without limits</h3><p>Eight CSS recipes, live colour and typography controls, plus unrestricted custom CSS for every uploaded file.</p></div><div><span className="feature-no">03</span><h3>Word-native output</h3><p>Real headings, styled tables, numbered lists, code blocks and editable document structure.</p></div></div></section>
 
       <footer className="shell"><a className="brand" href="#top"><span>F</span>Folio</a><p>Professional documents from one Markdown file.</p><small>Private · precise · publication ready</small></footer>
       <input ref={fileRef} className="sr-only" type="file" accept=".md,text/markdown,text/plain" onChange={(e) => openFile(e.target.files?.[0])}/>

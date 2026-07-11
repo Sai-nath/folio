@@ -83,6 +83,7 @@ export default function Home() {
   const [numberedHeadings, setNumberedHeadings] = useState(true);
   const [showHeader, setShowHeader] = useState(true);
   const [showPageNumbers, setShowPageNumbers] = useState(true);
+  const [zoom, setZoom] = useState(85);
   const fileRef = useRef<HTMLInputElement>(null);
   const theme = themes[themeKey];
 
@@ -290,12 +291,16 @@ export default function Home() {
           <div className="workspace">
             <section className="editor-pane"><div className="pane-label"><span>MARKDOWN SOURCE</span><span>{words} words · {readingTime} min</span></div><textarea aria-label="Markdown editor" value={markdown} onChange={(e) => setMarkdown(e.target.value)} spellCheck="false" /></section>
             <section className="preview-pane">
-              <div className="pane-label"><span>PRINT PREVIEW · {pageSize.toUpperCase()}</span><span className="live"><i/> Synced</span></div>
-              <div className={`paper document-shell page-${pageSize} margin-${marginSize}`} style={{ "--accent": theme.accent, "--ink": theme.ink, "--paper": theme.paper, "--doc-font": theme.font, "--page-padding": padding } as React.CSSProperties}>
-                {showHeader && <div className="paper-header"><span>{organization}</span><span>{classification} · V{version}</span></div>}
-                {coverPage && <section className="cover-preview"><small>{organization}</small><h1>{title}</h1><p>{themes[themeKey].category}</p><div><span>{author}</span><span>Version {version}</span></div></section>}
-                <article className={`document-preview theme-${themeKey} ${numberedHeadings ? "numbered-headings" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
-                {showPageNumbers && <div className="paper-footer"><span>{filename}</span><span>01</span></div>}
+              <div className="pane-label preview-toolbar"><span>DOCUMENT PREVIEW · {pageSize.toUpperCase()}</span><div className="preview-actions"><button aria-label="Zoom out" onClick={() => setZoom(Math.max(55, zoom - 10))}>−</button><span>{zoom}%</span><button aria-label="Zoom in" onClick={() => setZoom(Math.min(125, zoom + 10))}>＋</button><button className="fit-button" onClick={() => setZoom(85)}>Fit</button><span className="live"><i/> Live</span></div></div>
+              <div className="preview-scroll" tabIndex={0} aria-label="Scrollable document preview">
+                <div className="page-stage">
+                  <div className={`paper document-shell page-${pageSize} margin-${marginSize}`} style={{ "--accent": theme.accent, "--ink": theme.ink, "--paper": theme.paper, "--doc-font": theme.font, "--page-padding": padding, zoom: zoom / 100 } as React.CSSProperties}>
+                    {showHeader && <div className="paper-header"><span>{organization}</span><span>{classification} · V{version}</span></div>}
+                    {coverPage && <section className="cover-preview"><small>{organization}</small><h1>{title}</h1><p>{themes[themeKey].category}</p><div><span>{author}</span><span>Version {version}</span></div></section>}
+                    <article className={`document-preview theme-${themeKey} ${numberedHeadings ? "numbered-headings" : ""}`} dangerouslySetInnerHTML={{ __html: html }} />
+                    {showPageNumbers && <div className="paper-footer"><span>{filename}</span><span>01</span></div>}
+                  </div>
+                </div>
               </div>
             </section>
             {panel === "settings" && settingsPanel}

@@ -18,10 +18,13 @@ test("renders the Folio Markdown converter", async () => {
   assert.match(html, /<title>Folio — Professional documents from Markdown<\/title>/i);
   assert.match(html, /Your Markdown/);
   assert.match(html, /Upload a \.md file/);
-  assert.match(html, /PRINT PREVIEW/);
+  assert.match(html, /DOCUMENT PREVIEW/);
   assert.match(html, /SRS Standard/);
   assert.match(html, /Architecture/);
   assert.match(html, /Document setup/);
+  assert.match(html, /Scrollable document preview/);
+  assert.match(html, /Zoom out/);
+  assert.match(html, /Zoom in/);
   assert.match(html, /Custom CSS/);
   assert.match(html, /↓ PDF/);
   assert.match(html, /Professional DOCX/);

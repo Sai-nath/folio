@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render() {
@@ -29,4 +30,11 @@ test("renders the Folio Markdown converter", async () => {
   assert.match(html, /↓ PDF/);
   assert.match(html, /Professional DOCX/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
+});
+
+test("keeps long previews on a readable paper canvas", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\.page-a4, \.page-letter \{ aspect-ratio: auto; \}/);
+  assert.match(css, /\.document-preview \{[^}]*background: var\(--paper\)/);
+  assert.match(css, /\.preview-scroll \{[^}]*overflow: auto/);
 });

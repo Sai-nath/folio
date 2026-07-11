@@ -9,7 +9,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
 a { color: inherit; text-decoration: none; }
 .shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
-.shell-wide { width: min(1320px, calc(100% - 48px)); margin: 0 auto; }
+.shell-wide { width: min(1680px, calc(100% - 72px)); margin: 0 auto; }
 .nav { height: 96px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 11px; font-family: Georgia, serif; font-size: 21px; font-weight: 700; letter-spacing: -.02em; }
 .brand > span { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 50%; color: white; background: var(--plum); font-style: italic; font-size: 18px; }
@@ -33,7 +33,7 @@ a { color: inherit; text-decoration: none; }
 .privacy span { color: var(--plum); margin-right: 8px; }
 .hero-rule { position: absolute; bottom: 30px; right: 0; display: flex; align-items: center; width: 460px; gap: 15px; color: #8c847e; font: 9px/1 Arial; letter-spacing: .18em; }
 .hero-rule i { flex: 1; height: 1px; background: var(--line); }
-.studio-wrap { padding: 90px 0 110px; background: #242220; color: #f6f0e8; }
+.studio-wrap { padding: 82px 0 110px; background: #211f1d; color: #f6f0e8; }
 .studio-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 45px; }
 .studio-heading h2 { margin: 15px 0 0; font: 400 clamp(42px, 5vw, 66px)/.98 Georgia, serif; letter-spacing: -.045em; }
 .studio-heading > p { color: #a7a09b; max-width: 390px; font: 15px/1.65 Georgia, serif; }
@@ -49,7 +49,7 @@ a { color: inherit; text-decoration: none; }
 .bar-tools button:hover, .bar-tools button.active { background: #3b3734; color: white; }
 .bar-tools button.export { background: #f5f1e8; color: #282421; border-color: #f5f1e8; }
 .divider { width: 1px; height: 26px; background: #4a4542; margin: 0 3px; }
-.workspace { height: clamp(680px, 78vh, 900px); min-height: 0; display: grid; grid-template-columns: minmax(330px, .75fr) minmax(520px, 1.25fr); position: relative; }
+.workspace { height: clamp(720px, 82vh, 980px); min-height: 0; display: grid; grid-template-columns: minmax(380px, .72fr) minmax(620px, 1.28fr); position: relative; }
 .editor-pane, .preview-pane, .inspector-pane { min-width: 0; display: flex; flex-direction: column; }
 .editor-pane { background: #292624; border-right: 1px solid #494541; }
 .preview-pane { min-height: 0; background: #302d2b; overflow: hidden; }
@@ -69,14 +69,13 @@ a { color: inherit; text-decoration: none; }
 .preview-scroll::-webkit-scrollbar, .editor-pane textarea::-webkit-scrollbar, .inspector-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
 .preview-scroll::-webkit-scrollbar-track, .editor-pane textarea::-webkit-scrollbar-track { background: #292725; }
 .preview-scroll::-webkit-scrollbar-thumb, .editor-pane textarea::-webkit-scrollbar-thumb { background: #5e5752; border: 2px solid #292725; border-radius: 10px; }
-.page-stage { min-width: max-content; min-height: 100%; padding: 40px 52px 70px; display: flex; align-items: flex-start; justify-content: center; }
-.paper { width: 620px; min-height: 877px; margin: 0 auto; padding: var(--page-padding); background: var(--paper); color: var(--ink); box-shadow: 0 2px 3px #0002, 0 22px 60px #0008; font-family: var(--doc-font); position: relative; overflow: visible; transform-origin: top center; border: 1px solid #d7d3cc; }
-.page-a4 { aspect-ratio: 210 / 297; }
-.page-letter { aspect-ratio: 8.5 / 11; }
+.page-stage { min-width: max-content; min-height: 100%; padding: 44px 60px 90px; display: flex; align-items: flex-start; justify-content: center; }
+.paper { width: 680px; height: auto; min-height: 962px; margin: 0 auto; padding: var(--page-padding); background: var(--paper); color: var(--ink); box-shadow: 0 2px 3px #0003, 0 26px 75px #0009; font-family: var(--doc-font); position: relative; overflow: visible; transform-origin: top center; border: 1px solid #d7d3cc; }
+.page-a4, .page-letter { aspect-ratio: auto; }
 .paper-header, .paper-footer { display: flex; justify-content: space-between; align-items: center; color: #85817d; font: 7px/1.2 Arial, sans-serif; letter-spacing: .09em; text-transform: uppercase; }
 .paper-header { margin-bottom: 34px; padding-bottom: 9px; border-bottom: 1px solid #dedbd7; }
 .paper-footer { position: absolute; left: var(--page-padding); right: var(--page-padding); bottom: 24px; padding-top: 9px; border-top: 1px solid #dedbd7; }
-.document-preview { padding-bottom: 28px; }
+.document-preview { min-height: 300px; padding-bottom: 72px; color: var(--ink); background: var(--paper); }
 .cover-preview { min-height: 500px; display: flex; flex-direction: column; justify-content: center; text-align: center; border-bottom: 1px solid #ddd8d1; margin-bottom: 55px; padding: 35px 0 70px; }
 .cover-preview small { color: var(--accent); font: 700 8px/1 Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
 .cover-preview h1 { max-width: 430px; margin: 52px auto 18px; font-family: var(--doc-font); font-size: 42px; line-height: 1.08; }
@@ -85,7 +84,7 @@ a { color: inherit; text-decoration: none; }
 .paper h1 { margin: 0 0 10px; font-size: 39px; line-height: 1.08; font-weight: 500; }
 .paper h2 { margin: 38px 0 13px; color: var(--accent); font-size: 21px; }
 .paper h3 { margin: 28px 0 10px; font-size: 15px; }
-.paper p, .paper li, .paper td, .paper th { font-size: 11px; line-height: 1.78; }
+.paper p, .paper li, .paper td, .paper th { font-size: 12.5px; line-height: 1.72; }
 .paper p { margin: 0 0 14px; }
 .paper blockquote { margin: 25px 0; padding: 8px 20px; color: var(--accent); border-left: 2px solid var(--accent); }
 .paper blockquote p { font-size: 15px; line-height: 1.55; }
@@ -202,7 +201,7 @@ footer small { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; 
   .bar-tools { width: 100%; overflow-x: auto; }
   .bar-tools button { white-space: nowrap; }
   .page-stage { padding: 24px 20px 55px; }
-  .paper { width: 560px; min-height: 792px; padding: 45px 38px; }
+  .paper { width: 600px; min-height: 848px; padding: 50px 42px; }
   .paper h1 { font-size: 30px; }
   .inspector-pane { width: 100%; }
   .mini-page { margin: 18px 24px; }

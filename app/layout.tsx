@@ -6,9 +6,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3001";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const image = `${protocol}://${host}/og.png`;
-  const title = "Folio — Markdown to beautiful PDF & DOCX";
-  const description = "Upload, edit, style, and export Markdown as polished PDF or Word documents — privately in your browser.";
+  const image = `${protocol}://${host}/og-v2.png`;
+  const title = "Folio — Professional documents from Markdown";
+  const description = "Turn one Markdown file into a polished SRS, architecture document, report, research paper, PDF, or professional Word document — privately in your browser.";
   return {
     title,
     description,

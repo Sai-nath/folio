@@ -63,6 +63,14 @@ const cssPresets = {
   spacious: { label: "Spacious", description: "Premium generous layout", css: `.document-preview p, .document-preview li { line-height: 1.95; }\n.document-preview h2 { margin-top: 52px; margin-bottom: 18px; }\n.document-preview h3 { margin-top: 34px; }\n.document-preview table { margin: 34px 0; }` },
   technical: { label: "Technical", description: "Code & architecture docs", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h2 { color: #4d3d8f; border-left: 4px solid #6b5bb0; padding-left: 12px; }\n.document-preview code { color: #8b2f57; }\n.document-preview pre { border: 1px solid #d8d7df; border-radius: 5px; }` },
   accessible: { label: "Accessible", description: "High contrast & readable", css: `.document-preview { font-family: Arial, sans-serif; color: #111; }\n.document-preview p, .document-preview li { font-size: 14px; line-height: 1.8; }\n.document-preview h1, .document-preview h2, .document-preview h3 { color: #111; }\n.document-preview a { color: #0047ab; text-decoration: underline; }` },
+  report: { label: "Annual Report", description: "Metrics & leadership reports", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h1 { color: #15344f; font-size: 46px; border-bottom: 6px solid #d2a84a; }\n.document-preview h2 { color: #15344f; text-transform: uppercase; letter-spacing: .08em; }\n.document-preview th { background: #15344f; }` },
+  handbook: { label: "Handbook", description: "Policies & employee guides", css: `.document-preview { font-family: Arial, sans-serif; }\n.document-preview h1 { color: #204d3a; }\n.document-preview h2 { background: #edf4ef; color: #204d3a; padding: 10px 14px; border-radius: 4px; }\n.document-preview blockquote { background: #fff8df; border-color: #c89520; }` },
+  twoColumn: { label: "Two Column", description: "Magazine-style long-form", css: `.document-preview { column-count: 2; column-gap: 34px; column-rule: 1px solid #ddd; }\n.document-preview h1, .document-preview h2, .document-preview h3, .document-preview table, .document-preview pre { column-span: all; }\n.document-preview p { text-align: justify; }` },
+  newsletter: { label: "Newsletter", description: "Updates & announcements", css: `.document-preview { font-family: Georgia, serif; }\n.document-preview h1 { color: #8a294e; text-align: center; border-top: 1px solid #8a294e; border-bottom: 1px solid #8a294e; padding: 18px 0; }\n.document-preview h2 { color: #8a294e; }\n.document-preview > p:first-of-type { font-size: 16px; font-style: italic; }` },
+  monochrome: { label: "Monochrome", description: "Ink-safe formal printing", css: `.document-preview { color: #111; filter: grayscale(1); }\n.document-preview h1 { border-bottom: 3px solid #111; }\n.document-preview h2, .document-preview h3 { color: #111; }\n.document-preview th { background: #222; }` },
+  bordered: { label: "Framed", description: "Premium bordered document", css: `.document-preview { border: 2px solid #27364a; padding: 30px; }\n.document-preview h1 { text-align: center; color: #27364a; }\n.document-preview h2 { border-top: 1px solid #8d99a8; padding-top: 12px; color: #27364a; }` },
+  blueprint: { label: "Blueprint", description: "Engineering design language", css: `.document-preview { font-family: Arial, sans-serif; color: #143a5a; }\n.document-preview h1 { color: #0c4f7a; text-transform: uppercase; }\n.document-preview h2 { color: #0c4f7a; border-bottom: 2px solid #5fa4cb; }\n.document-preview table { border: 2px solid #0c4f7a; }\n.document-preview code { color: #b23a48; }` },
+  printSafe: { label: "Print Safe", description: "Conservative PDF output", css: `.document-preview { font-family: Arial, sans-serif; color: #111; }\n.document-preview * { text-shadow: none !important; box-shadow: none !important; }\n.document-preview h1, .document-preview h2, .document-preview h3 { color: #111; break-after: avoid; }\n.document-preview table, .document-preview blockquote, .document-preview pre { break-inside: avoid; }` },
 } as const;
 
 type ThemeKey = keyof typeof themes;
@@ -70,10 +78,20 @@ type CssPresetKey = keyof typeof cssPresets;
 type PageSize = "a4" | "letter";
 type MarginSize = "narrow" | "normal" | "wide";
 
+function cleanMarkdownText(value: string): string {
+  return value
+    .replace(/<[^>]+>/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\\([\\`*_[\]{}()#+.!~-])/g, "$1")
+    .replace(/[*_~`]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function plainText(token: Tokens.Generic): string {
-  if (typeof token.text === "string") return token.text.replace(/<[^>]+>/g, "");
+  if (typeof token.text === "string") return cleanMarkdownText(token.text);
   if (Array.isArray(token.tokens)) return token.tokens.map(plainText).join(" ");
-  if (typeof token.raw === "string") return token.raw.replace(/[#>*_`\[\]]/g, "").trim();
+  if (typeof token.raw === "string") return cleanMarkdownText(token.raw.replace(/^#+\s*|^>\s*/g, ""));
   return "";
 }
 
@@ -130,22 +148,37 @@ export default function Home() {
       const value = String(reader.result ?? "");
       setMarkdown(value);
       setFilename(file.name);
-      const firstHeading = value.match(/^#\s+(.+)$/m)?.[1]?.trim();
-      const lines = value.split(/\r?\n/).map((line) => line.replace(/^#+\s*|[*_`>]/g, "").trim()).filter(Boolean);
+      const rawLines = value.split(/\r?\n/);
+      const firstHeading = cleanMarkdownText(value.match(/^#\s+(.+)$/m)?.[1] ?? "");
+      const lines = rawLines.map((line) => cleanMarkdownText(line.replace(/^#+\s*|^>\s*/g, ""))).filter(Boolean);
       const namedLine = lines.slice(0, 60).filter((line) => line.length <= 100 && /privacy policy|terms(?: of (?:use|service))?|user agreement|cookie policy|refund policy|acceptable use|service agreement/i.test(line)).sort((a, b) => a.length - b.length)[0];
+      const boldTitles = rawLines.slice(0, 20).map((line) => line.match(/^\s*(?:\*\*|__)(.+?)(?:\*\*|__)\s*$/)?.[1]).filter((line): line is string => Boolean(line)).map(cleanMarkdownText).filter((line) => line.length <= 70 && !/^(version|status|date|for|prepared)/i.test(line));
       const filenameTitle = file.name.replace(/\.md$/i, "").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-      const detectedTitle = firstHeading || namedLine || filenameTitle || "Untitled Document";
-      const fingerprint = `${file.name}\n${value.slice(0, 8000)}`.toLowerCase();
+      const headingIsSection = /^\d+(?:\.\d+)*[.)]?\s+/.test(firstHeading);
+      const boldTitle = boldTitles.length >= 2 ? `${boldTitles[0]} — ${boldTitles[1]}` : boldTitles[0];
+      const detectedTitle = (!headingIsSection && firstHeading) || boldTitle || namedLine || filenameTitle || "Untitled Document";
+      const fingerprint = `${file.name}\n${value.slice(0, 3500)}`.toLowerCase();
       setTitle(detectedTitle);
-      if (/privacy|terms|policy|agreement|legal|cookie/.test(fingerprint)) {
+      if (boldTitles[0] && boldTitles[0].length <= 40) setOrganization(boldTitles[0]);
+      if (/architecture|system design|technical design|technical specification|engineering specification/.test(fingerprint)) {
+        setThemeKey("architecture");
+        setCustomCss(cssPresets.technical.css);
+        setActivePreset("technical");
+      } else if (/requirement|\bsrs\b/.test(fingerprint)) {
+        setThemeKey("srs");
+        setCustomCss(cssPresets.corporate.css);
+        setActivePreset("corporate");
+      } else if (/privacy|terms|policy|agreement|legal|cookie/.test(fingerprint)) {
         setThemeKey("legal");
         setCustomCss(cssPresets.policy.css);
         setActivePreset("policy");
         const owner = detectedTitle.match(/^(.+?)\s+(?:privacy policy|terms|policy|agreement)/i)?.[1];
         if (owner && owner.length <= 40) setOrganization(owner);
-      } else if (/architecture|system design|technical design/.test(fingerprint)) setThemeKey("architecture");
-      else if (/requirement|\bsrs\b/.test(fingerprint)) setThemeKey("srs");
-      else if (/research|abstract|methodology|bibliography/.test(fingerprint)) setThemeKey("academic");
+      } else if (/research|abstract|methodology|bibliography/.test(fingerprint)) {
+        setThemeKey("academic");
+        setCustomCss(cssPresets.classic.css);
+        setActivePreset("classic");
+      }
       document.querySelector("#studio")?.scrollIntoView({ behavior: "smooth" });
       flash("Markdown loaded privately in your browser.");
     };

@@ -46,4 +46,10 @@ test("detects legal Markdown and exposes unrestricted styling", async () => {
   assert.match(page, /setThemeKey\("legal"\)/);
   assert.match(page, /Always enabled/);
   assert.match(page, /Object\.keys\(cssPresets\)/);
+  assert.match(page, /function cleanMarkdownText/);
+  assert.match(page, /headingIsSection/);
+  assert.match(page, /boldTitles/);
+  assert.ok(page.indexOf("technical specification") < page.indexOf("/privacy|terms|policy|agreement|legal|cookie/"));
+  const presetBlock = page.slice(page.indexOf("const cssPresets"), page.indexOf("type ThemeKey"));
+  assert.ok((presetBlock.match(/description:/g) ?? []).length >= 16);
 });
